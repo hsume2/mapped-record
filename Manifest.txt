@@ -1,0 +1,16 @@
+History.txt
+LICENSE
+Manifest.txt
+README.rdoc
+Rakefile
+lib/mapped-record.rb
+lib/mapped-record/hash/mappable.rb
+lib/mapped-record/mapping.rb
+script/console
+script/destroy
+script/generate
+test/database.yml
+test/hashed-record/hash/test_mappable.rb
+test/hashed-record/test_mapping.rb
+test/test_helper.rb
+test/test_mapped_record.rb

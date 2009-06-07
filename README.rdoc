@@ -1,0 +1,131 @@
+= mapped-record
+
+http://github.com/hsume2/mapped-record
+
+Auto-magically map Hash[keys] to ActiveRecord.attributes.
+
+Suppose you have a hash <tt>a_hash = { 'FullName' => 'Your Name' }</tt>, and an Active Record object
+with a +:full_name+ attribute to create with 'Your Name'. It's easy to deal with this on a one-time basis:
+
+  model.create( :full_name => a_hash['FullName'] )
+
+However, add in 20 other keys and it gets tiresome.
+
+Suppose you could define hash +keys+ and their target ActiveRecord +attribute+ in one place; then, initialize
+Active Record objects with the corresponding data. Continue reading.
+
+== Getting Started
+
+All you have to do is add +attr_mapped+ to your model.
+
+  class Person < ActiveRecord::Base
+    attr_mapped 'FullName' => :full_name
+  end
+  
+Then you can create and update like so:
+
+  p = Person.create_with(h)
+  h['FullName'] = 'Mr. Name'
+  p.update_with(h)
+
++mapped-record+ is more powerful than that. See Mapping Types for efficient ways to assign mappings.
+See Mapping Helpers for extra-added features (e.g. post-processing data).
+
+== Mapping Types
+
+Mappings can be created in the following ways:
+
+=== Automatic mappings (implicit)
+
+If you use,
+  attr_mapped 'FullName'
++attr_mapped+ will automatically downcase_and_underscore the key to +:full_name+, which is often useful.
+Whenever used, specify these first.
+
+=== Manual mappings (explicit)
+
+To manually set which Active Record attribute you want a key to map to, add manual mappings in the options hash.
+  attr_mapped 'FullName' => :full_name
+  attr_mapped { 'FullName' => :full_name } # same as above
+  attr_mapped 'FullName' => :full_name, 'Email' # will fail, because the options hash is considered the last argument
+
+=== Namespace mappings
+
+Suppose you have a lot of keys starting with +PBType+ which you want removed. Then add <tt>:namespace => 'PBType'</tt> to remove the prefix and then map automatically (also in the options hash)
+
+  attr_mapped 'PBTypeName', 'PBTypeAddress', 'PBTypeCode', { :namespace => 'PBType' }
+
+will map +PBTypeName+ to +:name+, +PBTypeAddress+ to +:address+, etc.
+
+Namespaces only apply to the keys for each +attr_mapped+ call. So
+
+  class PBPerson < ActiveRecord::Base
+    attr_mapped 'PBTypeName', { :namespace => 'PBType' }
+    attr_mapped 'PBTypeAddr'
+  end
+
+will map +PBTypeName+ to +:name+, but +PBTypeAddr+ to +:pb_type_addr+.
+
+=== Mapping priority
+
+Regardless of how many times you call +attr_mapped+, mappings are overridden in increasing order of
+priority:
+ 
+* implicit
+* namespace
+* explicit
+  
+That means explicit will always override namespace and implicit, regardless of the order in which #attr_mapped is called. To illustrate this behavior:
+
+  class PBPerson < ActiveRecord::Base
+    attr_mapped 'PBTypeName', { :namespace => 'PBType' }
+    attr_mapped 'PBTypeName'
+    attr_mapped { 'PBTypeName' => :actually_this }
+    
+    attr_mapped 'PBTypeName', { :namespace => 'PBType', 'PBTypeName' => :actually_this } # even in this confusing example
+  end
+
+will map to +:actually_this+. 
+
+== Mapping Helpers
+
+=== :id
+
+If one of the hash keys should map to the Active Record id, setting it like <tt>attr_mapped :key => :id</tt>
+won't work. Active Record won't let you mass assign +:id+ anyway. Instead
+  attr_mapped 'PBTypeName', { :namespace => 'PBType', :id => 'PBKey' }
+to force creation with +PBKey+'s value.
+
+=== :serialize
+
+You can also specify which keys to serialize after they've been mapped. Using,
+  attr_mapped 'PBArray', { :namespace => 'PB', :serialize => 'PBArray' }
+will map +PBArray+ to +:array+ and call <tt>serialize :array</tt> in the Active Record.
+
+=== :filter
+
+You can add proc filters to process data from hashes before it's used by Active Record.
+
+Suppose all the dates are in the wrong format, then,
+  MYDATE = Proc.new { |p| Time.at(p + 978307200) }
+  attr_mapped 'PBDate', { :filter => { 'PBDate' => PBPerson::MYDATE } }
+
+== Named Mappings
+
+If for some reason, you want to use multiple mappings on the same model, you can create named mappings
+with +attr_mapped_named+, where the first argument is the mapping name, followed by the same as +attr_mapped+.
+
+  class Person < ActiveRecord::Base
+    attr_mapped_named :phone_record, 'FullName'
+  end
+
+=== Dynamic methods
+
++mapped-record+ will then dynamically create methods so you can:
+
+  p = Person.create_with_phone_record(h)
+  p.update_with_phone_record(h)
+
+== Credit
+
+... where deserved. A lot of cues from thoughtbot/paperclip[http://github.com/thoughtbot/paperclip] on how to set up the gem and testing, so thanks.
