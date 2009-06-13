@@ -71,7 +71,7 @@ def should_map name, field, mapping, type, klass=Mapping
     raise "Unknown mapping type"
   end
 
-  should "map #{type_s} from #{field} => #{mapping} for mapping :#{name}" do
+  should "map #{type_s} from #{field.kind_of?(Symbol) ? ':' : ''}#{field} => #{mapping} for mapping :#{name}" do
     assert_not_nil(klass.blank?, "Mappings not set up correctly.")
     assert_not_nil(klass[name], "Mapping #{name} not set up correctly.")
     assert_not_nil(klass[name][field], "Mapping #{name}'s #{field} not set up correctly.")

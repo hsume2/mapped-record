@@ -20,13 +20,11 @@ module MappedRecord
       # [<tt>'key' => :target, 'key2' => :target2, ...</tt>]
       #   As many manual mappings as needed.
       def create(mapping_name, *map_attrs)
-        raise MappingError, "Not creating mapping with nil name" if mapping_name.nil?
-        named_mappings[mapping_name] ||= Hash.new
+        raise NameError, "Not creating mapping with nil name" if mapping_name.nil?
+        named_mappings[mapping_name] ||= HashWithIndifferentAccess.new
 
         options = map_attrs.extract_options!
-        verbose = parse_verbose(options)
 
-        serialize_mappings = []
         namespace = nil
         type = IMPLICIT
 
@@ -36,25 +34,24 @@ module MappedRecord
             namespace = value.to_s unless value.to_s.blank?
           when :filter
             value.each_pair do |attr, proc|
-              named_mappings[mapping_name][attr.to_s] ||= Hash.new
+              named_mappings[mapping_name][attr.to_s] ||= HashWithIndifferentAccess.new
               named_mappings[mapping_name][attr.to_s][:filter] = proc
             end
           when String, Symbol # deals with explicit mappings
-            raise MappingError, "Must be symbol" unless value.kind_of?(Symbol)
+            raise TargetError.new(mapping_name, key, value, [String, Symbol]) unless value.kind_of?(Symbol)
             update_mapping(mapping_name, key, value.to_sym, EXPLICIT)
           end
         end
 
-        mapping_temp = Hash.new
+        mapping_temp = HashWithIndifferentAccess.new
 
         map_attrs.each do |attr|
-          raise MappingError, "Must be string or symbol." unless attr.kind_of?(String) or attr.kind_of?(Symbol)
+          raise TargetError.new(mapping_name, attr, nil, [Symbol]) unless attr.kind_of?(String) or attr.kind_of?(Symbol)
 
           mapped_attr = attr.to_s
           if namespace
-            match = mapped_attr[/^#{namespace}/]
-            raise MappingError, "Causes mapping to be ''" if mapped_attr == match
-            if match
+            raise NamespaceError, "Causes mapping to be ''" if mapped_attr == namespace
+            if mapped_attr.match(/^#{namespace}/)
               mapped_attr = mapped_attr.sub(/^#{namespace}/, '')
               type = NAMESPACE
             end
@@ -66,13 +63,13 @@ module MappedRecord
         named_mappings[mapping_name]
       end
 
-      def parse_verbose(options) # :nodoc:
-        if !options[:verbose].nil? && (options[:verbose].kind_of?(FalseClass) || options[:verbose].kind_of?(TrueClass))
-          verbose = options[:verbose]
-          options.delete(:verbose) 
-          verbose
-        end
-      end
+      # def parse_verbose(options) # :nodoc:
+      #   if !options[:verbose].nil? && (options[:verbose].kind_of?(FalseClass) || options[:verbose].kind_of?(TrueClass))
+      #     verbose = options[:verbose]
+      #     options.delete(:verbose) 
+      #     verbose
+      #   end
+      # end
 
       # Returns true if mapping of +mapping_name+ is assigned.
       def has?(mapping_name)
@@ -104,20 +101,27 @@ module MappedRecord
         create(key, *values)
       end
 
-      attr_accessor :named_mappings # :nodoc:
+      attr_reader :named_mappings # :nodoc:
 
       def named_mappings # :nodoc:
-        @named_mappings ||= Hash.new
+        @named_mappings ||= HashWithIndifferentAccess.new
       end
 
-      private :named_mappings
+      # Returns all defined mappings.
+      def all
+        named_mappings
+      end
 
       def update_mapping(mapping_name, key, value, type) # :nodoc:
         named_mapping = named_mappings[mapping_name]
-        named_mapping[key] ||= Hash.new
+        named_mapping[key] ||= HashWithIndifferentAccess.new
 
         if named_mapping[key][:to].nil? or type >= named_mapping[key][:type]
-          raise MappingError, "Multiple keys pointing to the same symbol" unless named_mapping.select { |key_name, mapping| key_name != key && mapping[:to] == value }.blank?
+          # check collision
+          collisions = named_mapping.select { |key_name, mapping| key_name.to_s != key.to_s && mapping[:to] == value }
+          raise CollisionError.new(mapping_name, key, value, collisions) unless collisions.blank?
+
+          # assign mapping
           named_mapping[key][:to] = value and named_mapping[key][:type] = type
         end
       end

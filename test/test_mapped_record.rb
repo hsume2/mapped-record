@@ -14,12 +14,8 @@ class TestMappedRecord < Test::Unit::TestCase
       assert_respond_to Dummy, :attr_mapped_named
     end
 
-    should "act like mapped" do
-      assert Dummy.acts_like?(:mapped)
-    end
-
-    should "raise ArgumentError when no mapping name and no options not given" do
-      assert_raises ArgumentError do
+    should "raise NameError when no mapping name and no options not given" do
+      assert_raises MappedRecord::NameError do
         Dummy.class_eval do
           attr_mapped_named
         end
@@ -53,7 +49,7 @@ class TestMappedRecord < Test::Unit::TestCase
       end
     end
 
-    context "when #attr_mapped_named" do # TODO should not allow mapping names with spaces
+    context "when #attr_mapped_named" do
       context "with dummy mapping and options" do
 
         setup do
@@ -77,6 +73,26 @@ class TestMappedRecord < Test::Unit::TestCase
 
         should "serialize" do
           assert Dummy.serialized_attributes.include?("mapping")
+        end
+
+        context "with indifferent access" do
+          setup do
+            rebuild_class :dummy2, :ImplicitMapping, :AnotherMapping, :ForNamespaceMapping, :ExplicitMapping => :explicit, :namespace => 'ForNamespace', :id => 'ForID', :filter => { :ImplicitMapping => @@proc }, :serialize => :ImplicitMapping
+          end
+          
+          # using same tests as above
+          should_map_implicit :dummy2, 'ImplicitMapping', :implicit_mapping
+          should_map_implicit :dummy2, 'AnotherMapping', :another_mapping
+          should_map_namespace :dummy2, 'ForNamespaceMapping', :mapping
+          should_map_explicit :dummy2, 'ExplicitMapping', :explicit
+
+          should "map proc" do
+            assert_same @@proc, Mapping[:dummy2]['ImplicitMapping'][:filter]
+          end
+
+          should "serialize" do
+            assert Dummy.serialized_attributes.include?("implicit_mapping")
+          end
         end
 
         context "a subclass" do
@@ -119,6 +135,20 @@ class TestMappedRecord < Test::Unit::TestCase
           rebuild_class :ser, 'ImplicitMapping', 'AnotherMapping', 'ForNamespaceMapping', 'ExplicitMapping' => :explicit, :namespace => 'ForNamespace', :id => 'AnotherMapping', :serialize => 'AnotherMapping'
         end
       end
+
+			should "raise NameError when mapping name has invalid characters" do
+				assert_raises MappedRecord::NameError do
+					rebuild_class 'name with spaces', 'ImplicitMapping'
+          rebuild_class 'namewith|n\/al|#ch*r%ct!rs', 'ImplicitMapping'
+        end
+			end
+			
+			should "raise TargetError when serialize target is not String, Symbol or Array" do
+				assert_raises MappedRecord::TargetError do
+          rebuild_class :serialize_fail, 'ImplicitMapping', 'AnotherMapping', 'ForNamespaceMapping',  :serialize => Fixnum
+					rebuild_class :serialize_fail, 'ImplicitMapping', 'AnotherMapping', 'ForNamespaceMapping',  :serialize => Proc.new{ |p| puts p }
+        end
+			end
 
       # ============================================
       # = #attr_mapped_named called multiple times =

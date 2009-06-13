@@ -5,17 +5,22 @@ class TestMapping < Test::Unit::TestCase
     setup do
       @sample_hash = {"PhotoCount"=>1, "KeyList"=>["2"], "KeyPhotoKey"=>"2", "RollID"=>3, "RollDateAsTimerInterval"=>263609145.0, "RollName"=>"May 9, 2009"}
     end
+
+		should "use use hash with indifferent access" do
+			assert(Mapping.send(:named_mappings).kind_of?(HashWithIndifferentAccess), "Should be hash with indifferent access.")
+		end
     
     context "creating named mapping" do
       setup do
         @mapping_name = :test_mapping
         @@proc = Proc.new { |p| 'PROC-ED' }
-        Mapping.create @mapping_name, 'ImplicitMapping', 'AnotherMapping', 'ForNamespaceMapping', 'ExplicitMapping' => :explicit, :namespace => 'ForNamespace', :filter => { 'ImplicitMapping' => @@proc }
+        Mapping.create @mapping_name, 'ImplicitMapping', :AnotherMapping, 'ForNamespaceMapping', 'ExplicitMapping' => :explicit, :namespace => 'ForNamespace', :filter => { 'ImplicitMapping' => @@proc }
       end
 
       should "have mapping named #{@mapping_name}" do
         assert Mapping.has?(@mapping_name)
         assert Mapping[@mapping_name].is_a?(Hash)
+				assert Mapping.all.include?(@mapping_name)
       end
       
       should "have #[] method" do
@@ -43,27 +48,29 @@ class TestMapping < Test::Unit::TestCase
       setup { Mapping.reset }
       
       should "allow symbol mapping" do
-        assert_nothing_raised(MappedRecord::MappingError) { Mapping.create :mixed, :key => :symbol }
+        assert_nothing_raised(MappedRecord::TargetError) { Mapping.create :mixed, :key => :symbol }
         Mapping.reset
-        assert_nothing_raised(MappedRecord::MappingError) { Mapping.create :mixed, :symbol }
+        assert_nothing_raised(MappedRecord::TargetError) { Mapping.create :mixed, :symbol }
       end
       
-      should "not allow non-symbol mappings" do
-        assert_raise(MappedRecord::MappingError) { Mapping.create :mixed, :key => 1 }
-        assert_raise(MappedRecord::MappingError) { Mapping.create :mixed, :key => Fixnum }
-        assert_raise(MappedRecord::MappingError) { Mapping.create :mixed, :key => 'String' }
-        assert_raise(MappedRecord::MappingError) { Mapping.create :mixed, 1 }
-        assert_raise(MappedRecord::MappingError) { Mapping.create :mixed, Fixnum }
+      should "raise TargetError with non-Symbol targets" do
+        assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, :key => 1 }
+        assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, :key => Fixnum }
+				assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, :key => 'String' }
+				assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, 'key2' => 'String' }
+        assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, 1 }
+        assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, Fixnum }
+				assert_raise(MappedRecord::TargetError) { Mapping.create :mixed, Mapping.class }
       end
 
       context "with mixed options" do
         # 4 combinations of symbol:string
         # validate :to is string or symbol
         setup do
-          Mapping.create :mixed, :SymbolMapping, 'StringMapping', :symbol_key => :key, "symbol_key" => :other_key
+          Mapping.create :mixed, :SymbolMapping, 'StringMapping', :symbol_key, "symbol_key" => :other_key
         end
 
-        should_map_explicit :mixed, :symbol_key, :key
+        should_map_explicit :mixed, :symbol_key, :other_key
         should_map_explicit :mixed, "symbol_key", :other_key
         should_map_implicit :mixed, 'StringMapping', :string_mapping
         should_map_implicit :mixed, :SymbolMapping, :symbol_mapping
@@ -77,8 +84,10 @@ class TestMapping < Test::Unit::TestCase
       
       should "clear mappings" do
         assert(!Mapping.blank?, "Mapping is blank.")
+				assert(!Mapping.empty?, "Mapping is blank.")
         Mapping.reset
         assert(Mapping.blank?, "Mappings should be blank.")
+				assert(Mapping.empty?, "Mappings should be blank.")
       end
     end
 
@@ -136,30 +145,32 @@ class TestMapping < Test::Unit::TestCase
     # ========================
     # = Raising MappingError =
     # ========================
-    should "raise MappingError when #namespace causes mapping to be ''" do
-      assert_raises MappedRecord::MappingError do
+    should "raise NamespaceError when #namespace causes mapping to be ''" do
+      assert_raises MappedRecord::NamespaceError do
         Mapping.create :ns_to_blank, 'ImplicitMapping', 'ImplicitMappingSecond', :namespace => 'ImplicitMapping'
       end
     end
 
-    should "raise MappingError with many-to-one mappings" do # because it will have unexpected results
-      assert_raises MappedRecord::MappingError do
+    should "raise CollisionError with many-to-one mappings" do # because it will have unexpected results
+      assert_raises MappedRecord::CollisionError do
         Mapping.create :many_to_one, 'Root', 'MappingWithRoot', :namespace => 'MappingWith'
       end
     end
     
-    should "raise MappingError with un-named mapping" do
+    should "raise NameError with un-named mapping" do
       Mapping.reset
-      assert_raises MappedRecord::MappingError do
+      assert_raises MappedRecord::NameError do
         Mapping.create nil, 'Root', 'MappingWithRoot', :namespace => 'MappingWith'
       end
       assert(Mapping.blank?, "Mapping shouldn't be set.")
     end
     
-    # should "raise MappingError with invalid mapping names" do
+    # should "raise NameError with invalid mapping names" do
     #   Mapping.reset
-    #   assert_raise(MappedRecord::MappingError) do
+    #   assert_raise(MappedRecord::NameError) do
     #     Mapping.create 1, 'Root'
+    # 				Mapping.create 'name with spaces', 'Root'
+    # 				Mapping.create 'name with |n\/al|# ch*r%ct!rs', 'Root'
     #   end
     # end
   end
