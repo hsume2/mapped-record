@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Henry Hsu"]
-  s.date = %q{2009-06-07}
+  s.date = %q{2009-06-13}
   s.description = %q{Auto-magically map Hash[keys] to ActiveRecord.attributes}
   s.email = ["henry@qlane.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
