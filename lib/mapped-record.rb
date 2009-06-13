@@ -12,7 +12,7 @@ require 'mapped-record/hash/mappable'
 require 'mapped-record/mapping'
 
 module MappedRecord
-  VERSION = '0.0.1' # :nodoc:
+  VERSION = '0.0.2' # :nodoc:
 
   IMPLICIT = 0 # :nodoc:
   NAMESPACE = 1 # :nodoc:

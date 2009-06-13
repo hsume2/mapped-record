@@ -2,3 +2,12 @@
 
 * 1 major enhancement:
   * Initial release
+
+== 0.0.1 2009-06-13
+
+* 5 minor enhancements:
+  * using define_method instead of instance_eval
+  * using indifferent access
+  * added coverage (99.6%)
+  * disallow invalid attr_mapped_named names
+  * added better exceptions
