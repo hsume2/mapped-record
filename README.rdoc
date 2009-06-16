@@ -55,7 +55,7 @@ Suppose you have a lot of keys starting with +PBType+ which you want removed. Th
 
   attr_mapped 'PBTypeName', 'PBTypeAddress', 'PBTypeCode', { :namespace => 'PBType' }
 
-will map +PBTypeName+ to +:name+, +PBTypeAddress+ to +:address+, etc.
+will map +PBTypeName+ to <tt>:name</tt>, +PBTypeAddress+ to <tt>:address</tt>, etc.
 
 Namespaces only apply to the keys for each +attr_mapped+ call. So
 
@@ -64,7 +64,7 @@ Namespaces only apply to the keys for each +attr_mapped+ call. So
     attr_mapped 'PBTypeAddr'
   end
 
-will map +PBTypeName+ to +:name+, but +PBTypeAddr+ to +:pb_type_addr+.
+will map +PBTypeName+ to <tt>:name</tt>, but +PBTypeAddr+ to +:pb_type_addr+.
 
 === Mapping priority
 
@@ -92,7 +92,7 @@ will map to +:actually_this+.
 === :id
 
 If one of the hash keys should map to the Active Record id, setting it like <tt>attr_mapped :key => :id</tt>
-won't work. Active Record won't let you mass assign +:id+ anyway. Instead
+won't work. Active Record won't let you mass assign <tt>:id</tt> anyway. Instead
   attr_mapped 'PBTypeName', { :namespace => 'PBType', :id => 'PBKey' }
 to force creation with +PBKey+'s value.
 
@@ -100,7 +100,7 @@ to force creation with +PBKey+'s value.
 
 You can also specify which keys to serialize after they've been mapped. Using,
   attr_mapped 'PBArray', { :namespace => 'PB', :serialize => 'PBArray' }
-will map +PBArray+ to +:array+ and call <tt>serialize :array</tt> in the Active Record.
+will map +PBArray+ to <tt>:array</tt> and call <tt>serialize :array</tt> in the Active Record.
 
 === :filter
 
