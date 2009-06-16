@@ -121,7 +121,7 @@ with +attr_mapped_named+, where the first argument is the mapping name, followed
 
 === Dynamic methods
 
-+mapped-record+ will then dynamically create methods so you can:
+<tt>mapped-record</tt> will then dynamically create methods so you can:
 
   p = Person.create_with_phone_record(h)
   p.update_with_phone_record(h)
