@@ -16,7 +16,7 @@ Active Record objects with the corresponding data. Continue reading.
 
 == Getting Started
 
-All you have to do is add +attr_mapped+ to your model.
+All you have to do is add <tt>attr_mapped</tt> to your model.
 
   class Person < ActiveRecord::Base
     attr_mapped 'FullName' => :full_name
