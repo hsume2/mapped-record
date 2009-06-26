@@ -28,7 +28,7 @@ Then you can create and update like so:
   h['FullName'] = 'Mr. Name'
   p.update_with(h)
 
-+mapped-record+ is more powerful than that. See Mapping Types for efficient ways to assign mappings.
+<tt>mapped-record</tt> is more powerful than that. See Mapping Types for efficient ways to assign mappings.
 See Mapping Helpers for extra-added features (e.g. post-processing data).
 
 == Mapping Types
@@ -39,7 +39,7 @@ Mappings can be created in the following ways:
 
 If you use,
   attr_mapped 'FullName'
-+attr_mapped+ will automatically downcase_and_underscore the key to +:full_name+, which is often useful.
+<tt>attr_mapped</tt> will automatically downcase_and_underscore the key to <tt>:full_name</tt>, which is often useful.
 Whenever used, specify these first.
 
 === Manual mappings (explicit)
