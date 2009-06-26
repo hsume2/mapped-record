@@ -75,7 +75,7 @@ priority:
 * namespace
 * explicit
   
-That means explicit will always override namespace and implicit, regardless of the order in which #attr_mapped is called. To illustrate this behavior:
+That means explicit will always override namespace and implicit, regardless of the order in which <tt>attr_mapped</tt> is called. To illustrate this behavior:
 
   class PBPerson < ActiveRecord::Base
     attr_mapped 'PBTypeName', { :namespace => 'PBType' }
