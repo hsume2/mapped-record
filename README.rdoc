@@ -5,7 +5,7 @@ http://github.com/hsume2/mapped-record
 Auto-magically map Hash[keys] to ActiveRecord.attributes.
 
 Suppose you have a hash <tt>a_hash = { 'FullName' => 'Your Name' }</tt>, and an Active Record object
-with a +:full_name+ attribute to create with 'Your Name'. It's easy to deal with this on a one-time basis:
+with a <tt>:full_name</tt> attribute to create with 'Your Name'. It's easy to deal with this on a one-time basis:
 
   model.create( :full_name => a_hash['FullName'] )
 
