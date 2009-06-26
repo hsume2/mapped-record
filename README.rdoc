@@ -11,7 +11,7 @@ with a <tt>:full_name</tt> attribute to create with 'Your Name'. It's easy to de
 
 However, add in 20 other keys and it gets tiresome.
 
-Suppose you could define hash +keys+ and their target ActiveRecord +attribute+ in one place; then, initialize
+Suppose you could define hash <tt>keys</tt> and their target ActiveRecord <tt>attribute</tt> in one place; then, initialize
 Active Record objects with the corresponding data. Continue reading.
 
 == Getting Started
@@ -51,24 +51,24 @@ To manually set which Active Record attribute you want a key to map to, add manu
 
 === Namespace mappings
 
-Suppose you have a lot of keys starting with +PBType+ which you want removed. Then add <tt>:namespace => 'PBType'</tt> to remove the prefix and then map automatically (also in the options hash)
+Suppose you have a lot of keys starting with <tt>PBType</tt> which you want removed. Then add <tt>:namespace => 'PBType'</tt> to remove the prefix and then map automatically (also in the options hash)
 
   attr_mapped 'PBTypeName', 'PBTypeAddress', 'PBTypeCode', { :namespace => 'PBType' }
 
-will map +PBTypeName+ to <tt>:name</tt>, +PBTypeAddress+ to <tt>:address</tt>, etc.
+will map <tt>PBTypeName</tt> to <tt>:name</tt>, <tt>PBTypeAddress</tt> to <tt>:address</tt>, etc.
 
-Namespaces only apply to the keys for each +attr_mapped+ call. So
+Namespaces only apply to the keys for each <tt>attr_mapped</tt> call. So
 
   class PBPerson < ActiveRecord::Base
     attr_mapped 'PBTypeName', { :namespace => 'PBType' }
     attr_mapped 'PBTypeAddr'
   end
 
-will map +PBTypeName+ to <tt>:name</tt>, but +PBTypeAddr+ to +:pb_type_addr+.
+will map <tt>PBTypeName</tt> to <tt>:name</tt>, but <tt>PBTypeAddr</tt> to +:pb_type_addr+.
 
 === Mapping priority
 
-Regardless of how many times you call +attr_mapped+, mappings are overridden in increasing order of
+Regardless of how many times you call <tt>attr_mapped</tt>, mappings are overridden in increasing order of
 priority:
  
 * implicit
@@ -94,13 +94,13 @@ will map to +:actually_this+.
 If one of the hash keys should map to the Active Record id, setting it like <tt>attr_mapped :key => :id</tt>
 won't work. Active Record won't let you mass assign <tt>:id</tt> anyway. Instead
   attr_mapped 'PBTypeName', { :namespace => 'PBType', :id => 'PBKey' }
-to force creation with +PBKey+'s value.
+to force creation with <tt>PBKey</tt>'s value.
 
 === :serialize
 
 You can also specify which keys to serialize after they've been mapped. Using,
   attr_mapped 'PBArray', { :namespace => 'PB', :serialize => 'PBArray' }
-will map +PBArray+ to <tt>:array</tt> and call <tt>serialize :array</tt> in the Active Record.
+will map <tt>PBArray</tt> to <tt>:array</tt> and call <tt>serialize :array</tt> in the Active Record.
 
 === :filter
 
@@ -113,7 +113,7 @@ Suppose all the dates are in the wrong format, then,
 == Named Mappings
 
 If for some reason, you want to use multiple mappings on the same model, you can create named mappings
-with +attr_mapped_named+, where the first argument is the mapping name, followed by the same as +attr_mapped+.
+with <tt>attr_mapped_named</tt>, where the first argument is the mapping name, followed by the same as <tt>attr_mapped</tt>.
 
   class Person < ActiveRecord::Base
     attr_mapped_named :phone_record, 'FullName'
